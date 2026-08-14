@@ -1,0 +1,28 @@
+Drop or transform these:
+
+Date — don't feed raw dates. Instead extract Week_Number (which week of semester) and Day_Number_of_Semester from it.
+Students_Present — this is the source of your target variable, not a feature.
+Attendance_Percentage — this IS your target (before you convert it to a band). Drop it from features.
+
+Keep and encode these:
+
+Day_of_Week — encode as numbers (Monday=0, Saturday=5) or use one-hot encoding.
+Lecture_Number — already numeric, keep as-is.
+Start_Time — encode as hour (8, 9, 10, 11, 13) — extract the hour from the string.
+Subject — label encode or one-hot encode.
+Faculty_ID — label encode.
+Practical_Theory — binary encode (Theory=0, Practical=1).
+Internal_Test_Week — binary (No=0, Yes=1).
+Assignment_Due — binary.
+Holiday_Before_After — encode as three categories (No=0, Before=1, After=2) or one-hot.
+Weather — label or one-hot encode.
+Special_Event — binary.
+Previous_Lecture_Attendance — already numeric, keep.
+Gap_Since_Previous_Lecture — encode as number of days (Same Day=0, 1 Day=1, etc.).
+
+Engineer these new features:
+
+Week_Number — parse the date, compute how many weeks since 22-Jun-2026. Week 1, Week 2, etc. This captures "early semester" vs "mid semester" behaviour.
+Is_First_Lecture_of_Day — binary flag: is Lecture_Number == 1? First lectures tend to have different attendance patterns.
+Is_Afternoon — binary flag: does the lecture start at 1:30 PM? Afternoon slots tend to drop off.
+Rolling_Avg_3 — the rolling average of the last 3 attendance values for that subject. This is a powerful predictor.
