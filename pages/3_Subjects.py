@@ -9,7 +9,7 @@ st.markdown("Analyze historical attendance on a per-subject basis to identify co
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/attendance_dataset-V2.csv")
+    df = pd.read_csv("data/attendance_dataset-V3_500_rows.csv")
     # Dynamically compute the bands using the same 3-quantile logic from our data pipeline
     df['Attendance_Band'] = pd.qcut(df['Attendance_Percentage'], q=3, labels=['Low', 'Medium', 'High'])
     return df

@@ -10,7 +10,7 @@ st.markdown("Explore historical attendance patterns purely based on **Day of Wee
 @st.cache_data
 def load_data():
     # Read the dataset directly
-    return pd.read_csv("data/attendance_dataset-V2.csv")
+    return pd.read_csv("data/attendance_dataset-V3_500_rows.csv")
 
 try:
     df = load_data()
