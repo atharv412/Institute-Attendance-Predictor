@@ -10,9 +10,10 @@ st.set_page_config(
 st.title("🎓 Welcome to the Attendance Prediction Dashboard")
 
 st.markdown("""
-Welcome! This application uses an XGBoost machine learning model to predict classroom attendance 
+Welcome! This application uses Machine Learning to predict classroom attendance 
 based on various scheduling and environmental factors. Use the sidebar to navigate to the **Predict** 
-page, where you can enter the details of a lecture to see if the expected attendance will be **Low**, **Medium**, or **High**.
+page, where you can choose between **XGBoost, Random Forest, and Logistic Regression** models 
+to predict if the expected attendance will be **Low**, **Medium**, or **High**.
 """)
 
 st.divider()
@@ -38,7 +39,15 @@ try:
     col1, col2, col3 = st.columns(3)
     
     col1.metric("Total Lectures Recorded", f"{total_lectures:,}")
-    col2.metric("Date Range", f"{min_date} to {max_date}")
+    
+    # Using HTML/Markdown to force the date range onto two lines to prevent cropping
+    col2.markdown(f"""
+    <div style="display: flex; flex-direction: column;">
+        <span style="font-size: 14px; opacity: 0.8;">Date Range</span>
+        <span style="font-size: 1.8rem; line-height: 1.2;">{min_date}<br>to {max_date}</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
     col3.metric("Overall Average Attendance", f"{avg_attendance:.2f}%")
     
     st.markdown("<br/>", unsafe_allow_html=True)
