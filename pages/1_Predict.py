@@ -52,7 +52,17 @@ col1, col2 = st.columns(2)
 
 with col1:
     day_of_week = st.selectbox("Day of Week", list(DAY_MAP.keys()))
-    subject = st.selectbox("Subject", list(SUBJECT_MAPPING.keys()))
+    
+    BASE_SUBJECTS = [
+        "Data Science & Machine Learning",
+        "Industry Readiness Program",
+        "Innovation and Entrepreneurship Development",
+        "Mini Project",
+        "Mobile Application Development",
+        "Principles of Cloud Management and Security",
+        "Software Testing and Quality Assurance"
+    ]
+    subject = st.selectbox("Subject", BASE_SUBJECTS)
     lecture_number = st.selectbox("Lecture Number", [1, 2, 3, 4, 5])
     start_time = st.selectbox("Start Time", ["8.30 AM", "9.15 AM", "10.15 AM", "11.15 AM", "1.30 PM", "2.30 PM", "3.30 PM"])
     practical_theory = st.radio("Type", ["Theory", "Practical"])
@@ -69,10 +79,20 @@ with col2:
 
 # Submit button
 if st.button("Predict Attendance 🚀", use_container_width=True):
+    # Map base subject + type to the exact dataset subject string
+    actual_subject = subject
+    if practical_theory == "Practical":
+        if subject == "Data Science & Machine Learning":
+            actual_subject = "DS & ML Practical"
+        elif subject == "Mobile Application Development":
+            actual_subject = "MAD Practical"
+        elif subject == "Software Testing and Quality Assurance":
+            actual_subject = "STQA Practical"
+
     # Collect inputs
     inputs = {
         'day_of_week': day_of_week,
-        'subject': subject,
+        'subject': actual_subject,
         'lecture_number': lecture_number,
         'start_time': start_time,
         'practical_theory': practical_theory,
