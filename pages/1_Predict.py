@@ -16,8 +16,8 @@ st.markdown("Enter the lecture details below to predict the attendance band (Low
 # Load model and encoders
 @st.cache_resource
 def load_models():
-    model = joblib.load("model/xgb-classifier-model.pkl")
-    label_encoder = joblib.load("model/label_encoder.pkl")
+    model = joblib.load("model/XGBoost/xgb-classifier-model.pkl")
+    label_encoder = joblib.load("model/XGBoost/label_encoder.pkl")
     return model, label_encoder
 
 try:
