@@ -13,25 +13,56 @@ st.set_page_config(page_title="Predict Attendance", page_icon="📈", layout="wi
 st.title("📈 Predict Attendance")
 st.markdown("Enter the lecture details below to predict the attendance band (Low, Medium, or High).")
 
-# Load model and encoders
+st.markdown("### 🤖 Select a Model")
+model_choice = st.selectbox(
+    "Choose the machine learning model to use for prediction:",
+    options=["XGBoost", "Random Forest", "Logistic Regression"],
+    help="Select the model you'd like to use. XGBoost is highly optimized and accurate. Random Forest provides robust predictions. Logistic Regression acts as a solid, interpretable baseline."
+)
+
+MODEL_PATHS = {
+    "XGBoost": "model/XGBoost/xgb-classifier-model.pkl",
+    "Random Forest": "model/Random_Forest/random_forest-classifier-model.pkl",
+    "Logistic Regression": "model/Logistic_Regression/logistic-regressor-model.pkl"
+}
+LABEL_ENCODER_PATHS = {
+    "XGBoost": "model/XGBoost/label_encoder.pkl",
+    "Random Forest": "model/Random_Forest/label_encoder.pkl",
+    "Logistic Regression": "model/Logistic_Regression/label_encoder.pkl"
+}
+
+# Load model and encoders based on selection
 @st.cache_resource
-def load_models():
-    model = joblib.load("model/xgb-classifier-model.pkl")
-    label_encoder = joblib.load("model/label_encoder.pkl")
+def load_models(selected_model):
+    model = joblib.load(MODEL_PATHS[selected_model])
+    label_encoder = joblib.load(LABEL_ENCODER_PATHS[selected_model])
     return model, label_encoder
 
 try:
-    model, target_encoder = load_models()
+    model, target_encoder = load_models(model_choice)
 except Exception as e:
     st.error(f"Failed to load models: {e}")
     st.stop()
+    
+st.divider()
+st.markdown("### 📝 Enter Lecture Details")
 
 # Layout
 col1, col2 = st.columns(2)
 
 with col1:
     day_of_week = st.selectbox("Day of Week", list(DAY_MAP.keys()))
-    subject = st.selectbox("Subject", list(SUBJECT_MAPPING.keys()))
+    
+    BASE_SUBJECTS = [
+        "Data Science & Machine Learning",
+        "Industry Readiness Program",
+        "Innovation and Entrepreneurship Development",
+        "Mini Project",
+        "Mobile Application Development",
+        "Principles of Cloud Management and Security",
+        "Software Testing and Quality Assurance"
+    ]
+    subject = st.selectbox("Subject", BASE_SUBJECTS)
     lecture_number = st.selectbox("Lecture Number", [1, 2, 3, 4, 5])
     start_time = st.selectbox("Start Time", ["8.30 AM", "9.15 AM", "10.15 AM", "11.15 AM", "1.30 PM", "2.30 PM", "3.30 PM"])
     practical_theory = st.radio("Type", ["Theory", "Practical"])
@@ -48,10 +79,20 @@ with col2:
 
 # Submit button
 if st.button("Predict Attendance 🚀", use_container_width=True):
+    # Map base subject + type to the exact dataset subject string
+    actual_subject = subject
+    if practical_theory == "Practical":
+        if subject == "Data Science & Machine Learning":
+            actual_subject = "DS & ML Practical"
+        elif subject == "Mobile Application Development":
+            actual_subject = "MAD Practical"
+        elif subject == "Software Testing and Quality Assurance":
+            actual_subject = "STQA Practical"
+
     # Collect inputs
     inputs = {
         'day_of_week': day_of_week,
-        'subject': subject,
+        'subject': actual_subject,
         'lecture_number': lecture_number,
         'start_time': start_time,
         'practical_theory': practical_theory,
@@ -68,16 +109,19 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
     with st.spinner("Analyzing parameters..."):
         try:
             # 1. Encode Inputs (passes dataset path to calculate rolling avg)
-            dataset_path = "data/attendance_dataset-V2.csv"
+            dataset_path = "data/attendance_dataset-V4-500.csv"
             df_encoded = encode_inputs(inputs, dataset_path)
             
             # 2. Predict
-            # XGBClassifier predict_proba returns probabilities for each class
-            prediction_idx = model.predict(df_encoded)[0]
+            prediction_raw = model.predict(df_encoded)[0]
             prediction_probs = model.predict_proba(df_encoded)[0]
             
-            # Inverse transform index to Label
-            prediction_label = target_encoder.inverse_transform([prediction_idx])[0]
+            # XGBoost returns an integer index, so we inverse_transform it.
+            # Scikit-Learn models (RF/LogReg) return the string directly, so we catch the error and use the string.
+            try:
+                prediction_label = target_encoder.inverse_transform([int(prediction_raw)])[0]
+            except (ValueError, TypeError):
+                prediction_label = str(prediction_raw)
             
             # 3. Display Result
             st.markdown("### Prediction Result")

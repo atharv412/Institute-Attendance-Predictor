@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import joblib
 
 st.set_page_config(page_title="Time Slots Analysis", page_icon="⏰", layout="wide")
 
@@ -10,7 +11,7 @@ st.markdown("Explore historical attendance patterns purely based on **Day of Wee
 @st.cache_data
 def load_data():
     # Read the dataset directly
-    return pd.read_csv("data/attendance_dataset-V2.csv")
+    return pd.read_csv("data/attendance_dataset-V4-500.csv")
 
 try:
     df = load_data()
@@ -45,15 +46,18 @@ try:
         height=500
     )
     
-    # Add annotations/borders for any cell below 50%
+    # Load model band thresholds
+    thresholds = joblib.load("model/XGBoost/band_thresholds.pkl")
+    
+    # Add annotations/borders for any cell below the 'low' threshold
     for day in pivot_df.index:
         for lecture in pivot_df.columns:
             val = pivot_df.loc[day, lecture]
-            if pd.notnull(val) and val < 50.0:
+            if pd.notnull(val) and val <= thresholds['low']:
                 fig.add_annotation(
                     x=lecture,
                     y=day,
-                    text="⚠️ < 50%",
+                    text="⚠️ Low",
                     showarrow=False,
                     font=dict(color="red", size=10, weight="bold"),
                     bgcolor="rgba(255, 255, 255, 0.9)",

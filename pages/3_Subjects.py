@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import joblib
 
 st.set_page_config(page_title="Subject Analysis", page_icon="📚", layout="wide")
 
@@ -9,9 +10,21 @@ st.markdown("Analyze historical attendance on a per-subject basis to identify co
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/attendance_dataset-V2.csv")
-    # Dynamically compute the bands using the same 3-quantile logic from our data pipeline
-    df['Attendance_Band'] = pd.qcut(df['Attendance_Percentage'], q=3, labels=['Low', 'Medium', 'High'])
+    df = pd.read_csv("data/attendance_dataset-V4-500.csv")
+    
+    # Load model band thresholds
+    thresholds = joblib.load("model/XGBoost/band_thresholds.pkl")
+    
+    def assign_band(val):
+        if val <= thresholds['low']:
+            return 'Low'
+        elif val > thresholds['high']:
+            return 'High'
+        else:
+            return 'Medium'
+            
+    # Assign bands dynamically based on the exact thresholds used by the model
+    df['Attendance_Band'] = df['Attendance_Percentage'].apply(assign_band)
     return df
 
 try:
