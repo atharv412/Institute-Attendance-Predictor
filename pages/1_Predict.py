@@ -38,8 +38,13 @@ def load_models(selected_model):
     label_encoder = joblib.load(LABEL_ENCODER_PATHS[selected_model])
     return model, label_encoder
 
+@st.cache_resource
+def load_regressor():
+    return joblib.load("model/GradientBoosting/gradient-Boosting-regressor-model.pkl")
+
 try:
     model, target_encoder = load_models(model_choice)
+    regressor_model = load_regressor()
 except Exception as e:
     st.error(f"Failed to load models: {e}")
     st.stop()
@@ -123,23 +128,37 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
             except (ValueError, TypeError):
                 prediction_label = str(prediction_raw)
             
-            # 3. Display Result
+            # 3. Predict with Regressor
+            predicted_value = regressor_model.predict(df_encoded)[0]
+            
+            # 4. Display Result
             st.markdown("### Prediction Result")
+            res_col1, res_col2 = st.columns(2)
             
-            if prediction_label == "High":
-                st.success("🌟 The model predicts **High** attendance for this lecture.")
-            elif prediction_label == "Medium":
-                st.warning("⚠️ The model predicts **Medium** attendance for this lecture.")
-            else:
-                st.error("📉 The model predicts **Low** attendance for this lecture.")
+            with res_col1:
+                st.markdown("#### 📊 Categorical Band")
+                if prediction_label == "High":
+                    st.success("🌟 The classifier predicts **High** attendance.")
+                elif prediction_label == "Medium":
+                    st.warning("⚠️ The classifier predicts **Medium** attendance.")
+                else:
+                    st.error("📉 The classifier predicts **Low** attendance.")
+                
+                st.markdown("**Probabilities:**")
+                classes = target_encoder.classes_ 
+                for cls, prob in zip(classes, prediction_probs):
+                    st.write(f"**{cls}** ({prob*100:.1f}%)")
+                    st.progress(float(prob))
             
-            # Show probabilities
-            st.markdown("#### Prediction Probabilities")
-            classes = target_encoder.classes_ # e.g., ['High', 'Low', 'Medium']
-            
-            for cls, prob in zip(classes, prediction_probs):
-                st.write(f"**{cls}** ({prob*100:.1f}%)")
-                st.progress(float(prob))
+            with res_col2:
+                st.markdown("#### 🎯 Numerical Estimate")
+                st.info(
+                    f"**Estimated Attendance:** ~{int(predicted_value)} students\n\n"
+                    f"**Confidence Range:** {max(0, int(predicted_value - 11))} to {int(predicted_value + 11)} students"
+                )
+                st.markdown(
+                    "*(The GradientBoosting Regressor provides a specific numerical estimate with an average error of ±11 students).* "
+                )
                 
         except Exception as e:
             st.error(f"An error occurred during prediction: {e}")
