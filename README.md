@@ -14,10 +14,11 @@ This system helps educators and administrators proactively identify periods of l
 - **Time-Based Splitting:** Instead of random training splits, the dataset is strictly sorted chronologically to evaluate the model accurately on future (unseen) time periods.
 
 ### 2. Machine Learning Models
-Three different models were trained and evaluated on the engineered dataset:
+Four different models were trained and evaluated on the engineered dataset:
 - **Random Forest Classifier:** A baseline ensemble model providing robust splits on categorical and continuous data.
 - **Logistic Regression:** A linear approach leveraging a `StandardScaler` pipeline to ensure proper convergence on continuous features.
-- **XGBoost Classifier (Deployed):** A highly optimized gradient boosting model that utilizes sample weights (to handle class imbalances) and produces reliable probabilistic predictions. The XGBoost pipeline (`xgb-classifier-model.pkl`) is the active model serving the web application.
+- **XGBoost Classifier:** A highly optimized gradient boosting model that utilizes sample weights (to handle class imbalances) and produces reliable probabilistic predictions for the attendance band.
+- **Gradient Boosting Regressor:** A regression model trained to predict the exact numerical attendance (number of students) with a measured Mean Absolute Error of ±11 students.
 
 ### 3. Interactive Streamlit Dashboard
 The project features a sleek, multi-page web dashboard built with [Streamlit](https://streamlit.io/):
@@ -26,27 +27,33 @@ The project features a sleek, multi-page web dashboard built with [Streamlit](ht
   - Highlights actionable insights discovered during exploratory analysis.
 - **Predict Page (`pages/1_Predict.py`):**
   - Features an intuitive, two-column form for users to input the context of a future lecture (e.g., Subject, Start Time, Weather, Internal Tests).
-  - Dynamically encodes these inputs via the `utils.py` module, derives complex features (like rolling averages), and interfaces with the pre-trained XGBoost model.
-  - Displays the predicted attendance band alongside visual probability bars (`st.progress`) for each class.
+  - Allows users to dynamically select their preferred classifier model (XGBoost, Random Forest, or Logistic Regression).
+  - Displays a side-by-side output: the predicted categorical band (Low/Medium/High) with probability bars, and a specific numerical attendance estimate (with a confidence range) generated simultaneously by the Gradient Boosting Regressor.
+- **Time Slots Analysis (`pages/2_Time_Slots.py`):** 
+  - An interactive Plotly heatmap pinpointing consistently underperforming lecture slots, automatically flagged using the exact attendance thresholds extracted directly from the XGBoost model.
+- **Subjects Analysis (`pages/3_Subjects.py`):** 
+  - Comprehensive bar and box plots showcasing attendance distribution, spread, and low-band frequency per subject, complete with interactive filtering.
 
 ## Project Structure
 ```text
 ds-ml-project/
 ├── data/
-│   └── attendance_dataset-V2.csv        # The historical attendance data
+│   └── cleaned_attendance_dataset.csv    # The historical attendance data
 ├── model/
-│   ├── xgb-classifier-model.pkl         # Trained XGBoost pipeline
-│   ├── label_encoder.pkl                # Target variable encoder (Low, Medium, High)
-│   └── subject_label_encoder.pkl        # Subject categorical encoder
+│   ├── XGBoost/                         # Trained XGBoost pipeline and thresholds
+│   ├── Random_Forest/                   # Trained Random Forest pipeline
+│   ├── Logistic_Regression/             # Trained Logistic Regression pipeline
+│   └── GradientBoosting/                # Trained Regressor model
 ├── notebooks/
 │   ├── Feature-engineering.txt          # Guidelines for feature extraction
 │   ├── Random-forect-classifier.ipynb   # Random Forest training & evaluation
-│   ├── Logistic-regression-classifier.ipynb # Logistic Regression training & evaluation
-│   └── XGBoost-classifier.ipynb         # XGBoost training & evaluation
+│   ├── Logistic-regression-classifier.ipynb # Logistic Regression training
+│   ├── XGBoost-classifier.ipynb         # XGBoost training & evaluation
+│   └── GardientBoosting.ipynb           # Gradient Boosting Regressor training
 ├── pages/
 │   ├── 1_Predict.py                     # Prediction dashboard page
-│   ├── 2_Time_Slots.py                  # (Upcoming) Analysis of time slots
-│   ├── 3_Subjects.py                    # (Upcoming) Analysis of subjects
+│   ├── 2_Time_Slots.py                  # Analytical visualization of time slots
+│   ├── 3_Subjects.py                    # Analytical visualization of subjects
 │   └── 4_What_if.py                     # (Upcoming) Scenario simulator
 ├── utils/
 │   └── utils.py                         # Data encoding and inference helper functions

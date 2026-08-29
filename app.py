@@ -21,7 +21,7 @@ st.subheader("📊 Dataset Overview")
 
 @st.cache_data
 def load_data():
-    return pd.read_csv("data/attendance_dataset-V4-500.csv")
+    return pd.read_csv("data/cleaned_attendance_dataset.csv")
 
 try:
     df = load_data()

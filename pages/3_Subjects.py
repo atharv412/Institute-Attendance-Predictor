@@ -10,7 +10,7 @@ st.markdown("Analyze historical attendance on a per-subject basis to identify co
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/attendance_dataset-V4-500.csv")
+    df = pd.read_csv("data/cleaned_attendance_dataset.csv")
     
     # Load model band thresholds
     thresholds = joblib.load("model/XGBoost/band_thresholds.pkl")

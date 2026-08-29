@@ -114,7 +114,7 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
     with st.spinner("Analyzing parameters..."):
         try:
             # 1. Encode Inputs (passes dataset path to calculate rolling avg)
-            dataset_path = "data/attendance_dataset-V4-500.csv"
+            dataset_path = "data/cleaned_attendance_dataset.csv"
             df_encoded = encode_inputs(inputs, dataset_path)
             
             # 2. Predict
