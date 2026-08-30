@@ -18,7 +18,7 @@ Four different models were trained and evaluated on the engineered dataset:
 - **Random Forest Classifier:** A baseline ensemble model providing robust splits on categorical and continuous data.
 - **Logistic Regression:** A linear approach leveraging a `StandardScaler` pipeline to ensure proper convergence on continuous features.
 - **XGBoost Classifier:** A highly optimized gradient boosting model that utilizes sample weights (to handle class imbalances) and produces reliable probabilistic predictions for the attendance band.
-- **Gradient Boosting Regressor:** A regression model trained to predict the exact numerical attendance (number of students) with a measured Mean Absolute Error of ±11 students.
+- **Gradient Boosting Regressor:** A regression model trained to predict the exact numerical attendance (number of students) with a measured Mean Absolute Error of ±16 students.
 
 ### 3. Interactive Streamlit Dashboard
 The project features a sleek, multi-page web dashboard built with [Streamlit](https://streamlit.io/):
@@ -38,7 +38,7 @@ The project features a sleek, multi-page web dashboard built with [Streamlit](ht
 ```text
 ds-ml-project/
 ├── data/
-│   └── cleaned_attendance_dataset.csv    # The historical attendance data
+│   └── attendance_dataset_cleaned.csv    # The historical attendance data
 ├── model/
 │   ├── XGBoost/                         # Trained XGBoost pipeline and thresholds
 │   ├── Random_Forest/                   # Trained Random Forest pipeline

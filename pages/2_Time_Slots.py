@@ -68,7 +68,7 @@ try:
                 )
     
     # Display the chart
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
     
     st.divider()
     
@@ -90,7 +90,7 @@ try:
     worst_slots['Avg Attendance (%)'] = worst_slots['Avg Attendance (%)'].round(2)
     
     # Display the dataframe with the worst slots at the top
-    st.dataframe(worst_slots, use_container_width=True, hide_index=True)
+    st.dataframe(worst_slots, width='stretch', hide_index=True)
 
 except Exception as e:
     st.error(f"An error occurred while generating the analytics: {e}")

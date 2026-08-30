@@ -27,14 +27,14 @@ MODEL_PATHS = {
 }
 
 MODEL_METRICS = {
-    "XGBoost": {"Accuracy": "61.0%", "Precision": "60.0%"},
-    "Random Forest": {"Accuracy": "48.0%", "Precision": "48.0%"},
-    "Logistic Regression": {"Accuracy": "56.0%", "Precision": "56.0%"}
+    "XGBoost": {"Accuracy": "47.0%", "Precision": "46.0%"},
+    "Random Forest": {"Accuracy": "45.0%", "Precision": "45.0%"},
+    "Logistic Regression": {"Accuracy": "52.0%", "Precision": "53.0%"}
 }
 
 REGRESSOR_METRICS = {
-    "MAPE": "32.28%",
-    "R²": "0.335"
+    "MAPE": "33.72%",
+    "R²": " 0.4918"
 }
 
 # Load model and encoders based on selection
@@ -94,7 +94,7 @@ with col2:
     previous_attendance = st.slider("Previous Lecture Attendance", min_value=0, max_value=200, value=50)
 
 # Submit button
-if st.button("Predict Attendance 🚀", use_container_width=True):
+if st.button("Predict Attendance 🚀", width='stretch'):
     # Map base subject + type to the exact dataset subject string
     actual_subject = subject
     if practical_theory == "Practical":
@@ -178,7 +178,7 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
                 st.markdown("#### 🎯 Numerical Estimate")
                 st.info(
                     f"**Estimated Attendance:** ~{int(predicted_value)} students\n\n"
-                    f"**Confidence Range:** {max(0, int(predicted_value - 11))} to {int(predicted_value + 11)} students"
+                    f"**Confidence Range:** {max(0, int(predicted_value - 16))} to {int(predicted_value + 16)} students"
                 )
                 st.markdown(
                     "*(The GradientBoosting Regressor provides a specific numerical estimate with an average error of ±16 students).* "
