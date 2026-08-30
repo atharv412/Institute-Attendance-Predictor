@@ -23,23 +23,39 @@ model_choice = st.selectbox(
 MODEL_PATHS = {
     "XGBoost": "model/XGBoost/xgb-classifier-model.pkl",
     "Random Forest": "model/Random_Forest/random_forest-classifier-model.pkl",
-    "Logistic Regression": "model/Logistic_Regression/logistic-regressor-model.pkl"
+    "Logistic Regression": "model/Logistic_Regression/logistic-regressor-classifier-model.pkl"
 }
-LABEL_ENCODER_PATHS = {
-    "XGBoost": "model/XGBoost/label_encoder.pkl",
-    "Random Forest": "model/Random_Forest/label_encoder.pkl",
-    "Logistic Regression": "model/Logistic_Regression/label_encoder.pkl"
+
+MODEL_METRICS = {
+    "XGBoost": {"Accuracy": "47.0%", "Precision": "46.0%"},
+    "Random Forest": {"Accuracy": "45.0%", "Precision": "45.0%"},
+    "Logistic Regression": {"Accuracy": "52.0%", "Precision": "53.0%"}
+}
+
+REGRESSOR_METRICS = {
+    "MAPE": "33.72%",
+    "R²": " 0.4918"
 }
 
 # Load model and encoders based on selection
 @st.cache_resource
 def load_models(selected_model):
     model = joblib.load(MODEL_PATHS[selected_model])
-    label_encoder = joblib.load(LABEL_ENCODER_PATHS[selected_model])
+    
+    label_encoder = None
+    # Only XGBoost requires the external label encoder; Scikit-Learn models return string labels natively.
+    if selected_model == "XGBoost":
+        label_encoder = joblib.load("model/XGBoost/label_encoder.pkl")
+        
     return model, label_encoder
+
+@st.cache_resource
+def load_regressor():
+    return joblib.load("model/GradientBoosting/gradient-Boosting-regressor-model.pkl")
 
 try:
     model, target_encoder = load_models(model_choice)
+    regressor_model = load_regressor()
 except Exception as e:
     st.error(f"Failed to load models: {e}")
     st.stop()
@@ -78,7 +94,7 @@ with col2:
     previous_attendance = st.slider("Previous Lecture Attendance", min_value=0, max_value=200, value=50)
 
 # Submit button
-if st.button("Predict Attendance 🚀", use_container_width=True):
+if st.button("Predict Attendance 🚀", width='stretch'):
     # Map base subject + type to the exact dataset subject string
     actual_subject = subject
     if practical_theory == "Practical":
@@ -109,7 +125,7 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
     with st.spinner("Analyzing parameters..."):
         try:
             # 1. Encode Inputs (passes dataset path to calculate rolling avg)
-            dataset_path = "data/attendance_dataset-V4-500.csv"
+            dataset_path = "data/attendance_dataset_cleaned.csv"
             df_encoded = encode_inputs(inputs, dataset_path)
             
             # 2. Predict
@@ -117,29 +133,56 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
             prediction_probs = model.predict_proba(df_encoded)[0]
             
             # XGBoost returns an integer index, so we inverse_transform it.
-            # Scikit-Learn models (RF/LogReg) return the string directly, so we catch the error and use the string.
-            try:
+            # Scikit-Learn models (RF/LogReg) return the string directly.
+            if target_encoder is not None:
                 prediction_label = target_encoder.inverse_transform([int(prediction_raw)])[0]
-            except (ValueError, TypeError):
+            else:
                 prediction_label = str(prediction_raw)
             
-            # 3. Display Result
-            st.markdown("### Prediction Result")
+            # 3. Predict with Regressor
+            predicted_value = regressor_model.predict(df_encoded)[0]
             
-            if prediction_label == "High":
-                st.success("🌟 The model predicts **High** attendance for this lecture.")
-            elif prediction_label == "Medium":
-                st.warning("⚠️ The model predicts **Medium** attendance for this lecture.")
-            else:
-                st.error("📉 The model predicts **Low** attendance for this lecture.")
+            # 4. Display Results and Metrics
+            st.markdown("### Prediction Result & Model Metrics")
             
-            # Show probabilities
-            st.markdown("#### Prediction Probabilities")
-            classes = target_encoder.classes_ # e.g., ['High', 'Low', 'Medium']
+            metrics_col1, metrics_col2 = st.columns(2)
+            with metrics_col1:
+                st.markdown(f"**{model_choice} Metrics:**")
+                st.write(f"- Accuracy: `{MODEL_METRICS[model_choice]['Accuracy']}`")
+                st.write(f"- Precision: `{MODEL_METRICS[model_choice]['Precision']}`")
+            with metrics_col2:
+                st.markdown("**GradientBoosting Regressor Metrics:**")
+                st.write(f"- MAPE: `{REGRESSOR_METRICS['MAPE']}`")
+                st.write(f"- R² Score: `{REGRESSOR_METRICS['R²']}`")
             
-            for cls, prob in zip(classes, prediction_probs):
-                st.write(f"**{cls}** ({prob*100:.1f}%)")
-                st.progress(float(prob))
+            st.divider()
+            
+            res_col1, res_col2 = st.columns(2)
+            
+            with res_col1:
+                st.markdown("#### 📊 Categorical Band")
+                if prediction_label == "High":
+                    st.success("🌟 The classifier predicts **High** attendance.")
+                elif prediction_label == "Medium":
+                    st.warning("⚠️ The classifier predicts **Medium** attendance.")
+                else:
+                    st.error("📉 The classifier predicts **Low** attendance.")
+                
+                st.markdown("**Probabilities:**")
+                classes = target_encoder.classes_ if target_encoder is not None else model.classes_
+                for cls, prob in zip(classes, prediction_probs):
+                    st.write(f"**{cls}** ({prob*100:.1f}%)")
+                    st.progress(float(prob))
+            
+            with res_col2:
+                st.markdown("#### 🎯 Numerical Estimate")
+                st.info(
+                    f"**Estimated Attendance:** ~{int(predicted_value)} students\n\n"
+                    f"**Confidence Range:** {max(0, int(predicted_value - 16))} to {int(predicted_value + 16)} students"
+                )
+                st.markdown(
+                    "*(The GradientBoosting Regressor provides a specific numerical estimate with an average error of ±16 students).* "
+                )
                 
         except Exception as e:
             st.error(f"An error occurred during prediction: {e}")

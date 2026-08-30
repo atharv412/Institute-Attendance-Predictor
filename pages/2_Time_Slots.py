@@ -11,7 +11,7 @@ st.markdown("Explore historical attendance patterns purely based on **Day of Wee
 @st.cache_data
 def load_data():
     # Read the dataset directly
-    return pd.read_csv("data/attendance_dataset-V4-500.csv")
+    return pd.read_csv("data/attendance_dataset_cleaned.csv")
 
 try:
     df = load_data()
@@ -47,7 +47,7 @@ try:
     )
     
     # Load model band thresholds
-    thresholds = joblib.load("model/XGBoost/band_thresholds.pkl")
+    thresholds = joblib.load("model/band_thresholds.pkl")
     
     # Add annotations/borders for any cell below the 'low' threshold
     for day in pivot_df.index:
@@ -68,7 +68,7 @@ try:
                 )
     
     # Display the chart
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
     
     st.divider()
     
@@ -90,7 +90,7 @@ try:
     worst_slots['Avg Attendance (%)'] = worst_slots['Avg Attendance (%)'].round(2)
     
     # Display the dataframe with the worst slots at the top
-    st.dataframe(worst_slots, use_container_width=True, hide_index=True)
+    st.dataframe(worst_slots, width='stretch', hide_index=True)
 
 except Exception as e:
     st.error(f"An error occurred while generating the analytics: {e}")

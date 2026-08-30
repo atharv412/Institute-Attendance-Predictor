@@ -10,10 +10,10 @@ st.markdown("Analyze historical attendance on a per-subject basis to identify co
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/attendance_dataset-V4-500.csv")
+    df = pd.read_csv("data/attendance_dataset_cleaned.csv")
     
     # Load model band thresholds
-    thresholds = joblib.load("model/XGBoost/band_thresholds.pkl")
+    thresholds = joblib.load("model/band_thresholds.pkl")
     
     def assign_band(val):
         if val <= thresholds['low']:
@@ -97,7 +97,7 @@ try:
         legend_title="",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width='stretch')
     
     # 4. Box Plot (Distribution & Outliers)
     st.divider()
@@ -120,7 +120,7 @@ try:
         yaxis_title="",
         showlegend=False
     )
-    st.plotly_chart(fig_box, use_container_width=True)
+    st.plotly_chart(fig_box, width='stretch')
 
 except Exception as e:
     st.error(f"An error occurred while generating the analytics: {e}")
