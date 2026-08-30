@@ -20,6 +20,16 @@ Four different models were trained and evaluated on the engineered dataset:
 - **XGBoost Classifier:** A highly optimized gradient boosting model that utilizes sample weights (to handle class imbalances) and produces reliable probabilistic predictions for the attendance band.
 - **Gradient Boosting Regressor:** A regression model trained to predict the exact numerical attendance (number of students) with a measured Mean Absolute Error of ±16 students.
 
+#### Experiment Outcomes Matrix
+*(Based on strict chronological time-based splitting )*
+
+| Model / Algorithm | Type | Configuration / Key Hyperparameters | Test Accuracy | Precision (Low Band) | Key Regressor Metrics |
+|-------------------|------|---------------------------------------|---------------|----------------------|------------------------|
+| **Logistic Regression** | Classifier | `StandardScaler`, `max_iter=1000`, `class_weight='balanced'` | **52.0%** | **53.0%** | N/A |
+| **XGBoost** | Classifier | `n_estimators=100`, `learning_rate=0.05`, `max_depth=4`, `class_weight='balanced'` | **47.0%** | **46.0%** | N/A |
+| **Random Forest** | Classifier | `n_estimators=100`, `class_weight='balanced'` | **45.0%** | **45.0%** | N/A |
+| **Gradient Boosting** | Regressor | `n_estimators=100`, `learning_rate=0.05`, `max_depth=4`, `min_samples_leaf=5` | N/A | N/A | **MAE**: 16.9, **MAPE**: 33.7%, **R²**: -0.49 |
+
 ### 3. Interactive Streamlit Dashboard
 The project features a sleek, multi-page web dashboard built with [Streamlit](https://streamlit.io/):
 - **Welcome Page (`app.py`):** 
@@ -54,7 +64,6 @@ ds-ml-project/
 │   ├── 1_Predict.py                     # Prediction dashboard page
 │   ├── 2_Time_Slots.py                  # Analytical visualization of time slots
 │   ├── 3_Subjects.py                    # Analytical visualization of subjects
-│   └── 4_What_if.py                     # (Upcoming) Scenario simulator
 ├── utils/
 │   └── utils.py                         # Data encoding and inference helper functions
 ├── app.py                               # Main Streamlit application (Welcome Page)
