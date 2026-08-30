@@ -125,7 +125,7 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
     with st.spinner("Analyzing parameters..."):
         try:
             # 1. Encode Inputs (passes dataset path to calculate rolling avg)
-            dataset_path = "data/cleaned_attendance_dataset.csv"
+            dataset_path = "data/attendance_dataset_cleaned.csv"
             df_encoded = encode_inputs(inputs, dataset_path)
             
             # 2. Predict
@@ -181,7 +181,7 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
                     f"**Confidence Range:** {max(0, int(predicted_value - 11))} to {int(predicted_value + 11)} students"
                 )
                 st.markdown(
-                    "*(The GradientBoosting Regressor provides a specific numerical estimate with an average error of ±11 students).* "
+                    "*(The GradientBoosting Regressor provides a specific numerical estimate with an average error of ±16 students).* "
                 )
                 
         except Exception as e:
