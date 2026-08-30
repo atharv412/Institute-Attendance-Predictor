@@ -23,19 +23,30 @@ model_choice = st.selectbox(
 MODEL_PATHS = {
     "XGBoost": "model/XGBoost/xgb-classifier-model.pkl",
     "Random Forest": "model/Random_Forest/random_forest-classifier-model.pkl",
-    "Logistic Regression": "model/Logistic_Regression/logistic-regressor-model.pkl"
+    "Logistic Regression": "model/Logistic_Regression/logistic-regressor-classifier-model.pkl"
 }
-LABEL_ENCODER_PATHS = {
-    "XGBoost": "model/XGBoost/label_encoder.pkl",
-    "Random Forest": "model/Random_Forest/label_encoder.pkl",
-    "Logistic Regression": "model/Logistic_Regression/label_encoder.pkl"
+
+MODEL_METRICS = {
+    "XGBoost": {"Accuracy": "61.0%", "Precision": "60.0%"},
+    "Random Forest": {"Accuracy": "48.0%", "Precision": "48.0%"},
+    "Logistic Regression": {"Accuracy": "56.0%", "Precision": "56.0%"}
+}
+
+REGRESSOR_METRICS = {
+    "MAPE": "32.28%",
+    "R²": "0.335"
 }
 
 # Load model and encoders based on selection
 @st.cache_resource
 def load_models(selected_model):
     model = joblib.load(MODEL_PATHS[selected_model])
-    label_encoder = joblib.load(LABEL_ENCODER_PATHS[selected_model])
+    
+    label_encoder = None
+    # Only XGBoost requires the external label encoder; Scikit-Learn models return string labels natively.
+    if selected_model == "XGBoost":
+        label_encoder = joblib.load("model/XGBoost/label_encoder.pkl")
+        
     return model, label_encoder
 
 @st.cache_resource
@@ -122,17 +133,30 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
             prediction_probs = model.predict_proba(df_encoded)[0]
             
             # XGBoost returns an integer index, so we inverse_transform it.
-            # Scikit-Learn models (RF/LogReg) return the string directly, so we catch the error and use the string.
-            try:
+            # Scikit-Learn models (RF/LogReg) return the string directly.
+            if target_encoder is not None:
                 prediction_label = target_encoder.inverse_transform([int(prediction_raw)])[0]
-            except (ValueError, TypeError):
+            else:
                 prediction_label = str(prediction_raw)
             
             # 3. Predict with Regressor
             predicted_value = regressor_model.predict(df_encoded)[0]
             
-            # 4. Display Result
-            st.markdown("### Prediction Result")
+            # 4. Display Results and Metrics
+            st.markdown("### Prediction Result & Model Metrics")
+            
+            metrics_col1, metrics_col2 = st.columns(2)
+            with metrics_col1:
+                st.markdown(f"**{model_choice} Metrics:**")
+                st.write(f"- Accuracy: `{MODEL_METRICS[model_choice]['Accuracy']}`")
+                st.write(f"- Precision: `{MODEL_METRICS[model_choice]['Precision']}`")
+            with metrics_col2:
+                st.markdown("**GradientBoosting Regressor Metrics:**")
+                st.write(f"- MAPE: `{REGRESSOR_METRICS['MAPE']}`")
+                st.write(f"- R² Score: `{REGRESSOR_METRICS['R²']}`")
+            
+            st.divider()
+            
             res_col1, res_col2 = st.columns(2)
             
             with res_col1:
@@ -145,7 +169,7 @@ if st.button("Predict Attendance 🚀", use_container_width=True):
                     st.error("📉 The classifier predicts **Low** attendance.")
                 
                 st.markdown("**Probabilities:**")
-                classes = target_encoder.classes_ 
+                classes = target_encoder.classes_ if target_encoder is not None else model.classes_
                 for cls, prob in zip(classes, prediction_probs):
                     st.write(f"**{cls}** ({prob*100:.1f}%)")
                     st.progress(float(prob))

@@ -51,8 +51,7 @@ DAY_MAP = {
     'Wednesday': 2, 
     'Thursday': 3, 
     'Friday': 4, 
-    'Saturday': 5, 
-    'Sunday': 6
+    'Saturday': 5
 }
 
 BINARY_MAP = {'No': 0, 'Yes': 1}

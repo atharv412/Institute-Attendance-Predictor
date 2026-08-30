@@ -47,7 +47,7 @@ try:
     )
     
     # Load model band thresholds
-    thresholds = joblib.load("model/XGBoost/band_thresholds.pkl")
+    thresholds = joblib.load("model/band_thresholds.pkl")
     
     # Add annotations/borders for any cell below the 'low' threshold
     for day in pivot_df.index:
