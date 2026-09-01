@@ -106,10 +106,10 @@ def encode_inputs(inputs, dataset_path):
     
     # 1. Derive missing fields
     faculty = FACULTY_PER_SUBJECT.get(inputs['subject'], "")
-    # Day number of semester: Since semester starts on Mon 22-Jun-2026, 
-    # it's just (Week_Number - 1) * 7 + Day_of_Week
+    # Day number of semester: Since semester starts on Friday 10-Apr-2026 (index 4 in DAY_MAP), 
+    # we subtract 4 to align the days chronologically.
     day_of_week_num = DAY_MAP[inputs['day_of_week']]
-    day_number_of_semester = ((inputs['week_number'] - 1) * 7) + day_of_week_num + 1
+    day_number_of_semester = ((inputs['week_number'] - 1) * 7) + (day_of_week_num - 4) + 1
     
     # Time based derivations
     start_time_hour = extract_hour(inputs['start_time'])
